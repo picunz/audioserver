@@ -11,7 +11,7 @@ client = OpenAI(api_key="sk-proj-x-XsC-2QxmqqrGia3EtbeZ4IwCFxv_twScfInCT8gNQ2gEy
  
 @app.get("/")
 def home():
-    return {"status": "ok", "msg": "Server attivo2 🚀"}
+    return {"status": "ok", "msg": "Server attivo3 🚀"}
 
 @app.post("/audio")
 async def audio_endpoint(file: UploadFile = File(...)):
