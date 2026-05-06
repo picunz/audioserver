@@ -6,8 +6,7 @@ import os
 
 app = FastAPI()
 
-# client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-client = OpenAI(api_key="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") 
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
  
 @app.get("/")
 def home():
