@@ -10,7 +10,7 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 @app.get("/")
 def home():
-    return {"status": "ok", "msg": "Server attivo 🚀"}
+    return {"status": "ok", "msg": "Server attivo2 🚀"}
 
 @app.post("/audio")
 async def audio_endpoint(file: UploadFile = File(...)):
