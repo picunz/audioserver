@@ -1,32 +1,51 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import JSONResponse
+from openai import OpenAI
+import tempfile
+import os
 
 app = FastAPI()
+
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 @app.get("/")
 def home():
     return {"status": "ok", "msg": "Server attivo 🚀"}
 
-# Simula pipeline audio → AI → risposta
 @app.post("/audio")
 async def audio_endpoint(file: UploadFile = File(...)):
 
-    # Legge il file ricevuto (audio dall'ESP32)
-    data = await file.read()
-    size = len(data)
+    # salva file temporaneo
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
+        tmp.write(await file.read())
+        tmp_path = tmp.name
 
-    print(f"Ricevuto audio: {size} bytes")
+    # 🎤 Speech-to-Text
+    with open(tmp_path, "rb") as audio_file:
+        transcript = client.audio.transcriptions.create(
+            model="gpt-4o-transcribe",
+            file=audio_file
+        )
 
-    # 👉 QUI normalmente faresti:
-    # - Whisper (audio → testo)
-    # - ChatGPT (testo → risposta)
-    # - TTS (testo → audio)
+    user_text = transcript.text
 
-    # Per test semplificato ritorniamo solo una risposta finta
-    fake_response = {
-        "received_bytes": size,
-        "message": "Audio ricevuto correttamente 🎧",
-        "reply": "Ciao! Il tuo ESP32 sta comunicando con il server 👍"
-    }
+    print("Testo utente:", user_text)
 
-    return JSONResponse(fake_response)
+    # 💬 ChatGPT
+    chat = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": "Rispondi in modo breve."},
+            {"role": "user", "content": user_text}
+        ]
+    )
+
+    reply = chat.choices[0].message.content
+
+    print("Risposta:", reply)
+
+    return JSONResponse({
+        "input_text": user_text,
+        "reply": reply
+    })
+    
